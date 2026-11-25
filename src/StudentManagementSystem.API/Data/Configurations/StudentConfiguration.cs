@@ -56,7 +56,8 @@ public class StudentConfiguration : IEntityTypeConfiguration<Student>
             .IsRequired()
             .HasConversion<string>()
             .HasMaxLength(20)
-            .HasDefaultValue(StudentStatus.Active);
+            .HasDefaultValue(StudentStatus.Active)
+            .HasSentinel((StudentStatus)0);
 
         builder.Property(s => s.CreatedAtUtc)
             .IsRequired()
