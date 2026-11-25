@@ -18,3 +18,56 @@ Content-Type: application/json
 GET {{StudentManagementSystem.API_HostAddress}}/api/auth/me
 Authorization: Bearer {{login.response.body.accessToken}}
 Accept: application/json
+
+### List Students (Search, Filter, Pagination)
+GET {{StudentManagementSystem.API_HostAddress}}/api/students?page=1&pageSize=10
+Authorization: Bearer {{login.response.body.accessToken}}
+Accept: application/json
+
+### Create Student
+# @name createStudent
+POST {{StudentManagementSystem.API_HostAddress}}/api/students
+Authorization: Bearer {{login.response.body.accessToken}}
+Content-Type: application/json
+
+{
+  "enrollmentNumber": "SMS-2026-0001",
+  "firstName": "Aarav",
+  "lastName": "Sharma",
+  "email": "aarav.sharma@example.com",
+  "phoneNumber": "+91-9876543210",
+  "dateOfBirth": "2004-05-14",
+  "gender": "Male",
+  "course": "B.Tech Computer Science",
+  "enrollmentYear": 2026,
+  "address": "123 Campus Road",
+  "status": "Active"
+}
+
+### Get Student By Id
+GET {{StudentManagementSystem.API_HostAddress}}/api/students/{{createStudent.response.body.id}}
+Authorization: Bearer {{login.response.body.accessToken}}
+Accept: application/json
+
+### Update Student
+PUT {{StudentManagementSystem.API_HostAddress}}/api/students/{{createStudent.response.body.id}}
+Authorization: Bearer {{login.response.body.accessToken}}
+Content-Type: application/json
+
+{
+  "enrollmentNumber": "SMS-2026-0001",
+  "firstName": "Aarav",
+  "lastName": "Sharma",
+  "email": "aarav.sharma@example.com",
+  "phoneNumber": "+91-9876543210",
+  "dateOfBirth": "2004-05-14",
+  "gender": "Male",
+  "course": "B.Tech Computer Science",
+  "enrollmentYear": 2026,
+  "address": "456 Hostel Block B",
+  "status": "Graduated"
+}
+
+### Delete Student
+DELETE {{StudentManagementSystem.API_HostAddress}}/api/students/{{createStudent.response.body.id}}
+Authorization: Bearer {{login.response.body.accessToken}}
