@@ -1,8 +1,16 @@
+using System.Text;
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using StudentManagementSystem.API.Configuration;
 using StudentManagementSystem.API.Data;
+using StudentManagementSystem.API.Interfaces;
 using StudentManagementSystem.API.Middleware;
+using StudentManagementSystem.API.Models;
+using StudentManagementSystem.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,7 +37,43 @@ if (string.IsNullOrWhiteSpace(connectionString))
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-// Configure Swagger / OpenAPI documentation.
+// Bind and validate required JWT configuration at startup.
+var jwtSection = builder.Configuration.GetSection(JwtOptions.SectionName);
+var jwtOptions = jwtSection.Get<JwtOptions>() ?? new JwtOptions();
+jwtOptions.Validate();
+
+builder.Services.Configure<JwtOptions>(jwtSection);
+
+// Register authentication and authorization services.
+builder.Services.AddScoped<IPasswordHasher<AdminUser>, PasswordHasher<AdminUser>>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+builder.Services
+    .AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options =>
+    {
+        options.RequireHttpsMetadata = !builder.Environment.IsDevelopment();
+        options.SaveToken = false;
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = jwtOptions.Issuer,
+            ValidateAudience = true,
+            ValidAudience = jwtOptions.Audience,
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.FromSeconds(30),
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key))
+        };
+    });
+
+builder.Services.AddAuthorization();
+
+// Configure Swagger / OpenAPI documentation with JWT Bearer support.
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -39,9 +83,27 @@ builder.Services.AddSwaggerGen(options =>
         Version = "v1",
         Description = "ASP.NET Core Web API (.NET 10) for managing student records and dashboard analytics."
     });
+
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter your JWT access token."
+    });
+
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+    });
 });
 
 var app = builder.Build();
+
+// Safely provision initial admin account only when AdminSeed secrets are configured.
+await DbSeeder.SeedInitialAdminAsync(app.Services);
 
 // Global exception handling middleware should run first in the pipeline.
 app.UseMiddleware<ExceptionHandlingMiddleware>();
@@ -62,6 +124,7 @@ app.UseHttpsRedirection();
 app.UseDefaultFiles();
 app.UseStaticFiles();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
