@@ -72,6 +72,37 @@ builder.Services
             ValidateIssuerSigningKey = true,
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key))
         };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                // Allow explicit Authorization: Bearer headers (Swagger/API clients),
+                // and fall back to the SameSite=Strict HttpOnly cookie for browser sessions.
+                if (string.IsNullOrEmpty(context.Token) &&
+                    context.Request.Cookies.TryGetValue(AuthCookieConstants.CookieName, out var cookieToken))
+                {
+                    // Defense-in-depth: reject cross-origin unsafe requests when authenticating via cookie.
+                    var isUnsafeMethod = !HttpMethods.IsGet(context.Request.Method) &&
+                                         !HttpMethods.IsHead(context.Request.Method) &&
+                                         !HttpMethods.IsOptions(context.Request.Method);
+
+                    if (isUnsafeMethod &&
+                        context.Request.Headers.TryGetValue("Origin", out var originValues))
+                    {
+                        var expectedOrigin = $"{context.Request.Scheme}://{context.Request.Host}";
+                        if (!string.Equals(originValues.ToString(), expectedOrigin, StringComparison.OrdinalIgnoreCase))
+                        {
+                            return Task.CompletedTask;
+                        }
+                    }
+
+                    context.Token = cookieToken;
+                }
+
+                return Task.CompletedTask;
+            }
+        };
     });
 
 builder.Services.AddAuthorization();
