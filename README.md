@@ -198,9 +198,27 @@ dotnet test StudentManagementSystem.slnx
 
 ## Screenshots
 
-> *Add screenshots after running the application locally and capturing your preferred views.*
+### 1. Admin Login
+*Secure administrator sign-in page with username or email login, password visibility toggle, and client-side validation.*
 
-- **Admin Login Page:** `<!-- ![Admin Login](docs/screenshots/login.png) -->`
-- **Dashboard Analytics:** `<!-- ![Admin Dashboard](docs/screenshots/dashboard.png) -->`
-- **Student Management & Modal Form:** `<!-- ![Student Management](docs/screenshots/students.png) -->`
-- **Swagger / OpenAPI:** `<!-- ![Swagger UI](docs/screenshots/swagger.png) -->`
+![Admin Login](docs/screenshots/login.png)
+
+### 2. Admin Dashboard
+*Overview of student KPI cards, year-over-year intake comparison, course distribution chart, monthly registration trends, and the latest five registered students.*
+
+![Admin Dashboard](docs/screenshots/dashboard.png)
+
+### 3. Register / Edit Student Form
+*Modal form for creating or updating student details with client-side and server-aligned input validation.*
+
+![Student Form Modal](docs/screenshots/student-form.png)
+
+### 4. Student Management
+*Paginated student directory featuring search by name or enrollment number, course and status filters, and edit/delete actions.*
+
+![Student Management](docs/screenshots/students.png)
+
+### 5. Swagger / OpenAPI Documentation
+*Interactive OpenAPI specification and endpoint testing interface with Bearer JWT authorization support.*
+
+![Swagger OpenAPI UI](docs/screenshots/swagger.png)
