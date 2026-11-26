@@ -71,3 +71,9 @@ Content-Type: application/json
 ### Delete Student
 DELETE {{StudentManagementSystem.API_HostAddress}}/api/students/{{createStudent.response.body.id}}
 Authorization: Bearer {{login.response.body.accessToken}}
+
+### Get Dashboard Statistics
+GET {{StudentManagementSystem.API_HostAddress}}/api/dashboard/stats
+Authorization: Bearer {{login.response.body.accessToken}}
+Accept: application/json
+

@@ -45,9 +45,11 @@ jwtOptions.Validate();
 builder.Services.Configure<JwtOptions>(jwtSection);
 
 // Register application services.
+builder.Services.AddSingleton(TimeProvider.System);
 builder.Services.AddScoped<IPasswordHasher<AdminUser>, PasswordHasher<AdminUser>>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IStudentService, StudentService>();
+builder.Services.AddScoped<IDashboardService, DashboardService>();
 
 builder.Services
     .AddAuthentication(options =>
